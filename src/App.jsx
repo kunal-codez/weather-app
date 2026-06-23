@@ -4,9 +4,12 @@ function App() {
     const [city, setCity] = useState("");
     const [weather, setWeather] = useState(null);
     const [error, setError] = useState("");
+    const [loading, setLoading] =useState(false);
+    const [recentSearches, setRecentSearches] = useState([]);
 
     const searchWeather = async () => {
         try {
+            setLoading(true);
             if (city.trim() === "") {
                 return;
             }
@@ -16,13 +19,17 @@ function App() {
             if(data.cod === "404"){
                 setError("City not found");
                 setWeather(null);
+                setLoading(false)
                 return ;
             }
+            setLoading(false);
             setWeather(data);
+            setRecentSearches([city, ...recentSearches.filter(item => item!==city)]);
         }
         catch(error){
             setError("Something went wrong");
             setWeather(null);
+            setLoading(false)
         }
     }
 
@@ -31,10 +38,13 @@ function App() {
             <h1>Weather App</h1>
             <input type="text" placeholder="Search City" value={city} onChange={(e) => setCity(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { searchWeather() } }} />
             <button onClick={searchWeather}>Search</button>
-
+            <h3>Recent Searches</h3>
+            {recentSearches.map((item,index) => (<p key={index}>{item}</p>))}
+            {loading && (<p>Loading....</p>)}
             {weather && (
                 <div>
                     <h2>{weather.name}</h2>
+                    <img src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`} alt="Weather Icon" />
                     <h3>{weather.main.temp}</h3>
                     <p>Feels Like : {weather.main.feels_like}</p><br />
                     <p>Humidty : {weather.main.humidity}</p>
